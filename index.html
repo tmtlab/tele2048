@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Master - Ultimate Challenge</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-top">
+            <div class="header-left">
+                <button class="hamburger-menu" onclick="openSettingsModal(event)" aria-label="Settings">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="logo-container">
+                    <h1>2048</h1>
+                    <div class="subtitle">MASTER EDITION</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="#" class="profile-btn" onclick="openProfileModal(event)" title="Profile">👤</a>
+                <a href="#" class="shop-btn" onclick="openShopModal(event)" title="Shop">🛒</a>
+                <a href="#" class="leaderboard-btn" onclick="openLeaderboardModal(event)" title="Leaderboard">🏆</a>
+                <a href="#" class="help-btn" onclick="openHelpModal(event)">Help</a>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box"><div class="label">Score</div><div class="value" id="score">0</div></div>
+            <div class="stat-box"><div class="label">Best</div><div class="value" id="bestScore">0</div></div>
+            <div class="stat-box"><div class="label">Coins</div><div class="value" id="coinsDisplay" style="color:#ffd700;">0</div></div>
+        </div>
+
+        <div class="drop-meter-container" id="dropMeterContainer">
+            <div class="drop-meter-left">
+                <span class="drop-meter-label">🎁</span>
+                <div class="drop-meter-bar">
+                    <div class="drop-meter-fill" id="dropMeterFill"></div>
+                </div>
+                <span class="drop-meter-percentage" id="dropMeterPercentage">0%</span>
+            </div>
+            <span class="level-indicator" id="levelIndicator">Level 1</span>
+        </div>
+
+        <div class="board-wrapper">
+            <div class="board-container" id="boardContainer">
+                <div class="board grid-4" id="board"></div>
+            </div>
+        </div>
+
+        <div class="powerups-bar" id="powerupsBar">
+            <div class="powerup disabled" id="powerup-shuffle" onclick="usePowerUp('shuffle')">
+                <span class="icon">🔀</span><span class="name">Shuffle</span><span class="count zero" id="count-shuffle">0</span>
+            </div>
+            <div class="powerup disabled" id="powerup-hammer" onclick="usePowerUp('hammer')">
+                <span class="icon">🔨</span><span class="name">Hammer</span><span class="count zero" id="count-hammer">0</span>
+            </div>
+            <div class="powerup disabled" id="powerup-double" onclick="usePowerUp('double')">
+                <span class="icon">✨</span><span class="name">2x Score</span><span class="count zero" id="count-double">0</span>
+            </div>
+            <div class="powerup disabled" id="powerup-shield" onclick="usePowerUp('shield')">
+                <span class="icon">🛡️</span><span class="name">Shield</span><span class="count zero" id="count-shield">0</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn secondary" onclick="newGame()">New Game</button>
+            <button class="btn secondary" onclick="undoMove()" id="undoBtn" disabled>Undo</button>
+            <button class="btn" onclick="togglePause()" id="pauseBtn">Pause</button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeHelpModal()">×</button>
+            <h2>How to Play</h2>
+            <div class="modal-content">
+                <h3>Basic Rules</h3>
+                <p>Use arrow keys or swipe to move tiles. When two tiles with the same number touch, they merge into one!</p>
+                <h3>Power-Ups</h3>
+                <ul>
+                    <li>🔀 Shuffle: Rearrange tiles</li>
+                    <li>🔨 Hammer: Remove any tile</li>
+                    <li>✨ 2x Score: Double points for 30s</li>
+                    <li>🛡️ Shield: Protect a number from bombs - follows the number!</li>
+                </ul>
+                <h3>Coins & Stars</h3>
+                <p>Earn coins by merging tiles. Use coins to buy power-ups. Buy more coins with Telegram Stars!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeSettingsModal()">×</button>
+            <h2>Settings</h2>
+            <div class="modal-content">
+                <h3>Player Name</h3>
+                <input type="text" class="player-name-input" id="playerNameInput" placeholder="Enter your name..." maxlength="15">
+                <h3>Sound</h3>
+                <div class="settings-option" onclick="toggleSound()">
+                    <span class="option-label">🔊 Sound Effects</span>
+                    <div class="toggle-switch active" id="soundToggle"><div class="toggle-knob"></div></div>
+                </div>
+                <h3>Theme</h3>
+                <div class="settings-option" onclick="toggleTheme()">
+                    <span class="option-label">🌙 Night Mode</span>
+                    <div class="toggle-switch" id="themeToggle"><div class="toggle-knob"></div></div>
+                </div>
+                <h3>Difficulty Mode</h3>
+                <div class="settings-option" onclick="toggleDifficultyMode()">
+                    <span class="option-label">📈 Progressive Difficulty</span>
+                    <div class="toggle-switch active" id="difficultyToggle"><div class="toggle-knob"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeProfileModal()">×</button>
+            <h2>Player Profile</h2>
+            <div class="modal-content">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">?</div>
+                    <div class="profile-name" id="profileName">You</div>
+                    <div id="telegramBadge" style="display:none; margin-top:5px;">
+                        <span style="background:#229ED9; color:white; padding:3px 8px; border-radius:10px; font-size:0.7em;">✓ Telegram User</span>
+                    </div>
+                </div>
+                <div class="profile-stats">
+                    <div class="profile-stat"><div class="p-label">Best Score</div><div class="p-value" id="profileBestScore">0</div></div>
+                    <div class="profile-stat"><div class="p-label">Games</div><div class="p-value" id="profileGamesPlayed">0</div></div>
+                    <div class="profile-stat"><div class="p-label">Coins</div><div class="p-value" id="profileCoins">0</div></div>
+                </div>
+                <div class="profile-tabs">
+                    <button class="profile-tab active" onclick="switchProfileTab('stats', this)">Stats</button>
+                    <button class="profile-tab" onclick="switchProfileTab('achievements', this)">Achievements</button>
+                </div>
+                <div id="profileContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div class="modal-overlay" id="leaderboardModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeLeaderboardModal()">×</button>
+            <h2>🏆 Leaderboard</h2>
+            <div class="modal-content">
+                <div class="leaderboard-tabs">
+                    <button class="leaderboard-tab active" onclick="switchLeaderboardTab('all', this)">All Time</button>
+                    <button class="leaderboard-tab" onclick="switchLeaderboardTab('weekly', this)">Weekly</button>
+                    <button class="leaderboard-tab" onclick="switchLeaderboardTab('daily', this)">Daily</button>
+                </div>
+                <div class="player-rank-display">
+                    Your Rank: <span class="highlight" id="playerRank">-</span>
+                </div>
+                <div id="leaderboardContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeShopModal()">×</button>
+            <h2>🛒 Shop</h2>
+            <div class="modal-content">
+                <p style="text-align:center;margin-bottom:12px;">
+                    Your Coins: <strong style="color:var(--coin-color);" id="shopCoinsDisplay">0</strong>
+                </p>
+                
+                <h3>Power-ups</h3>
+                <div class="shop-item">
+                    <div class="shop-icon">🔀</div>
+                    <div class="shop-info">
+                        <div class="shop-name">Shuffle</div>
+                        <div class="shop-price">🪙 50 coins</div>
+                    </div>
+                    <button class="shop-buy-btn" id="buy-shuffle" onclick="EnhancedShop.buyWithCoins('shuffle')">Buy</button>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-icon">🔨</div>
+                    <div class="shop-info">
+                        <div class="shop-name">Hammer</div>
+                        <div class="shop-price">🪙 75 coins</div>
+                    </div>
+                    <button class="shop-buy-btn" id="buy-hammer" onclick="EnhancedShop.buyWithCoins('hammer')">Buy</button>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-icon">✨</div>
+                    <div class="shop-info">
+                        <div class="shop-name">2x Score</div>
+                        <div class="shop-price">🪙 100 coins</div>
+                    </div>
+                    <button class="shop-buy-btn" id="buy-double" onclick="EnhancedShop.buyWithCoins('double')">Buy</button>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-icon">🛡️</div>
+                    <div class="shop-info">
+                        <div class="shop-name">Shield</div>
+                        <div class="shop-price">🪙 80 coins</div>
+                    </div>
+                    <button class="shop-buy-btn" id="buy-shield" onclick="EnhancedShop.buyWithCoins('shield')">Buy</button>
+                </div>
+                
+                <h3>Buy Coins with Stars ⭐</h3>
+                <div id="starPackages">
+                    <div class="shop-item">
+                        <div class="shop-icon">🪙</div>
+                        <div class="shop-info">
+                            <div class="shop-name">100 Coins</div>
+                            <div class="shop-price">⭐ 50 stars</div>
+                        </div>
+                        <button class="shop-buy-btn" onclick="EnhancedShop.buyWithStars('pack100')">Buy</button>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <div class="shop-icon">💰</div>
+                        <div class="shop-info">
+                            <div class="shop-name">500 Coins</div>
+                            <div class="shop-price">⭐ 200 stars</div>
+                        </div>
+                        <button class="shop-buy-btn" onclick="EnhancedShop.buyWithStars('pack500')">Buy</button>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <div class="shop-icon">💎</div>
+                        <div class="shop-info">
+                            <div class="shop-name">1000 Coins</div>
+                            <div class="shop-price">⭐ 350 stars</div>
+                        </div>
+                        <button class="shop-buy-btn" onclick="EnhancedShop.buyWithStars('pack1000')">Buy</button>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <div class="shop-icon">👑</div>
+                        <div class="shop-info">
+                            <div class="shop-name">2500 Coins</div>
+                            <div class="shop-price">⭐ 800 stars</div>
+                        </div>
+                        <button class="shop-buy-btn" onclick="EnhancedShop.buyWithStars('pack2500')">Buy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:5000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
+            <div class="loading-spinner"></div>
+            <p id="loadingText" style="margin-top:10px;">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/telegram.js"></script>
+    <script src="js/payments.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

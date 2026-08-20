@@ -1,0 +1,16 @@
+{
+  "name": "telegram-2048-game",
+  "version": "1.0.0",
+  "description": "2048 Master Game for Telegram Mini App",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
